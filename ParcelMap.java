@@ -1,6 +1,5 @@
-package service;
+package model;
 
-import model.Parcel;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,5 +16,9 @@ public class ParcelMap {
 
     public void removeParcel(String parcelId) {
         parcels.remove(parcelId);
+    }
+
+    public Map<String, Parcel> getParcels() {
+        return parcels;
     }
 }
