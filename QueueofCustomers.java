@@ -1,6 +1,5 @@
-package service;
+package model;
 
-import model.Customer;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -17,5 +16,9 @@ public class QueueofCustomers {
 
     public int getQueueSize() {
         return customers.size();
+    }
+
+    public Queue<Customer> getCustomers() {
+        return customers;
     }
 }
