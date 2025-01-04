@@ -14,10 +14,20 @@ public class Parcel {
     }
 
     public float calculateFee() {
-        return weight * 10 + daysInDepot * 2; // Example fee logic
+        float feePerKg = 10.0f;
+        float dailyStorageFee = 2.0f;
+        return (weight * feePerKg) + (daysInDepot * dailyStorageFee);
     }
 
-    public String getParcelId() { return parcelId; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getParcelId() {
+        return parcelId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }
