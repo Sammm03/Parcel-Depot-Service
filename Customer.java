@@ -9,6 +9,11 @@ public class Customer {
         this.name = name;
     }
 
-    public int getSequenceNumber() { return sequenceNumber; }
-    public String getName() { return name; }
+    public int getSequenceNumber() {
+        return sequenceNumber;
+    }
+
+    public String getName() {
+        return name;
+    }
 }
