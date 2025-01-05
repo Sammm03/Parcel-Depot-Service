@@ -1,32 +1,33 @@
-package controller;
+package model;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
 public class Log {
-    private static Log instance; // Singleton instance
-    private StringBuilder logBuffer = new StringBuilder(); // Stores log events
+    private static Log instance;
+    private StringBuilder logData;
 
-    // Private constructor
-    private Log() {}
+    private Log() {
+        logData = new StringBuilder();
+    }
 
-    // Method to get the Singleton instance
-    public static synchronized Log getInstance() {
+    public static Log getInstance() {
         if (instance == null) {
             instance = new Log();
         }
         return instance;
     }
 
-    // Method to log events
-    public void logEvent(String event) {
-        logBuffer.append(event).append("\n");
+    public void addEvent(String event) {
+        logData.append(event).append("\n");
     }
 
-    // Method to write log to a file
-    public void writeToFile(String filename) throws IOException {
-        try (FileWriter writer = new FileWriter(filename)) {
-            writer.write(logBuffer.toString());
+    public void writeToFile(String filename) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+            writer.write(logData.toString());
+        } catch (IOException e) {
+            System.err.println("Error writing log file: " + e.getMessage());
         }
     }
 }
