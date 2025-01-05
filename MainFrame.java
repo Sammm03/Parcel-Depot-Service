@@ -1,87 +1,98 @@
 package view;
 
 import controller.Manager;
-import controller.Worker;
 import model.Customer;
 import model.Parcel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainFrame extends JFrame {
+    private JTable customerTable;
+    private JTable parcelTable;
     private Manager manager;
-    private Worker worker;
 
-    private DefaultListModel<String> customerListModel;
-    private DefaultListModel<String> parcelListModel;
-    private JTextArea logArea;
-
-    public MainFrame(Manager manager, Worker worker) {
+    public MainFrame(List<Customer> customers, List<Parcel> parcels, Manager manager) {
         this.manager = manager;
-        this.worker = worker;
 
-        setTitle("Depot Parcel Processing System");
-        setSize(800, 600);
+        setTitle("Parcel Management System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(800, 600);
         setLayout(new BorderLayout());
 
-        // Customer Panel
-        customerListModel = new DefaultListModel<>();
-        JList<String> customerList = new JList<>(customerListModel);
-        JPanel customerPanel = new JPanel(new BorderLayout());
-        customerPanel.setBorder(BorderFactory.createTitledBorder("Customer Queue"));
-        customerPanel.add(new JScrollPane(customerList), BorderLayout.CENTER);
+        // Initialize Tables
+        initializeCustomerTable(customers);
+        initializeParcelTable(parcels);
 
-        // Parcel Panel
-        parcelListModel = new DefaultListModel<>();
-        JList<String> parcelList = new JList<>(parcelListModel);
-        JPanel parcelPanel = new JPanel(new BorderLayout());
-        parcelPanel.setBorder(BorderFactory.createTitledBorder("Parcels"));
-        parcelPanel.add(new JScrollPane(parcelList), BorderLayout.CENTER);
-
-        // Log Panel
-        logArea = new JTextArea();
-        logArea.setEditable(false);
-        JPanel logPanel = new JPanel(new BorderLayout());
-        logPanel.setBorder(BorderFactory.createTitledBorder("System Log"));
-        logPanel.add(new JScrollPane(logArea), BorderLayout.CENTER);
-
-        // Button Panel
-        JPanel buttonPanel = new JPanel(new FlowLayout());
-        JButton processButton = new JButton("Process Customer");
-        processButton.addActionListener(e -> processNextCustomer());
-
-        buttonPanel.add(processButton);
+        // Add Buttons
+        JButton processButton = new JButton("Process Next Customer");
+        processButton.addActionListener(e -> processCustomer());
 
         // Add Components
-        add(customerPanel, BorderLayout.WEST);
-        add(parcelPanel, BorderLayout.CENTER);
-        add(logPanel, BorderLayout.EAST);
-        add(buttonPanel, BorderLayout.SOUTH);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                new JScrollPane(customerTable), new JScrollPane(parcelTable));
+        splitPane.setDividerLocation(300);
 
-        // Update Panels
-        updateCustomerList();
-        updateParcelList();
+        add(new JLabel("Parcel Management System", SwingConstants.CENTER), BorderLayout.NORTH);
+        add(splitPane, BorderLayout.CENTER);
+        add(processButton, BorderLayout.SOUTH);
+
+        setVisible(true); // Ensure GUI is visible
     }
 
-    private void processNextCustomer() {
-        worker.processNextCustomer();
-        updateCustomerList();
-        updateParcelList();
-        logArea.append("Processed next customer.\n");
-    }
+    private void initializeCustomerTable(List<Customer> customers) {
+        String[] customerColumns = {"Seq No", "Name", "Parcel ID"};
+        Object[][] customerData = new Object[customers.size()][3];
 
-    private void updateCustomerList() {
-        customerListModel.clear();
-        for (Customer customer : manager.getQueue().getCustomers()) {
-            customerListModel.addElement(customer.getSequenceNumber() + " - " + customer.getName());
+        for (int i = 0; i < customers.size(); i++) {
+            Customer customer = customers.get(i);
+            customerData[i][0] = customer.getSequenceNumber();
+            customerData[i][1] = customer.getName();
+            customerData[i][2] = customer.getParcelId();
         }
+
+        customerTable = new JTable(customerData, customerColumns);
     }
 
-    private void updateParcelList() {
-        parcelListModel.clear();
-        for (Parcel parcel : manager.getParcelMap().getParcels().values()) {
-            parcelListModel.addElement(parcel.getParcelId() + " - " + parcel.getStatus());
+    private void initializeParcelTable(List<Parcel> parcels) {
+        String[] parcelColumns = {"Parcel ID", "Days in Depot", "Weight", "Dimensions", "Status"};
+        Object[][] parcelData = new Object[parcels.size()][5];
+
+        for (int i = 0; i < parcels.size(); i++) {
+            Parcel parcel = parcels.get(i);
+            parcelData[i][0] = parcel.getParcelId();
+            parcelData[i][1] = parcel.getDaysInDepot();
+            parcelData[i][2] = parcel.getWeight();
+            parcelData[i][3] = parcel.getDimensions();
+            parcelData[i][4] = parcel.getStatus();
         }
+
+        parcelTable = new JTable(parcelData, parcelColumns);
     }
+
+    private void processCustomer() {
+        String message = manager.processNextCustomer();
+        JOptionPane.showMessageDialog(this, message);
+
+        // Refresh GUI tables
+        updateCustomerTable();
+        updateParcelTable();
+    }
+
+    private void updateCustomerTable() {
+        List<Customer> customers = new ArrayList<>(manager.getQueue().getCustomers());
+        initializeCustomerTable(customers);
+        revalidate();
+        repaint();
+    }
+
+    private void updateParcelTable() {
+        List<Parcel> parcels = new ArrayList<>(manager.getParcelMap().getParcels().values());
+        initializeParcelTable(parcels);
+        revalidate(); // Refresh GUI components
+        repaint();
+    }
+
 }
