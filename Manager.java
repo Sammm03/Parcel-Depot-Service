@@ -1,24 +1,30 @@
 package controller;
 
-import model.QueueofCustomers; // Import the class
+import model.*;
 import model.ParcelMap;
-import model.Customer;
-import model.Parcel;
-import java.io.*;
-
+import model.QueueofCustomers;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Manager {
-    private QueueofCustomers queue;
-    private ParcelMap parcelMap;
-    private Worker worker;
+    private final QueueofCustomers queue;
+    private final ParcelMap parcelMap;
+    private final Worker worker;
+    private final Log log;
 
     public Manager() {
         queue = new QueueofCustomers();
-        parcelMap = new ParcelMap();
-        worker = new Worker(queue, parcelMap);
+        parcelMap = ParcelMap.getInstance(); // Use Singleton method
+        worker = new Worker();
+        log = Log.getInstance();
+
+
+        // Hook to print summary on application exit
+        Runtime.getRuntime().addShutdownHook(new Thread(this::printSummary));
+    }
+    public Log getLog() {
+        return log;
     }
 
     // Getters for queue and parcelMap
@@ -73,13 +79,12 @@ public class Manager {
         System.out.println("Loaded parcels: " + parcelMap.getParcels().size());
     }
 
-    // Process the next customer
     public String processNextCustomer() {
         if (queue.isEmpty()) {
             return "No customers in the queue.";
         }
 
-        Customer customer = queue.peekCustomer();
+        Customer customer = queue.peekCustomer(); // Only peek, do not remove yet
         if (customer == null) {
             return "No customers in the queue.";
         }
@@ -90,20 +95,30 @@ public class Manager {
         }
 
         double fee = worker.processCustomer(customer, parcel);
-        return "Processed customer: " + customer.getName() + " | Fee: $" + String.format("%.2f", fee);
+
+        // Update the queue and parcel after processing
+        queue.removeCustomer(); // Remove customer from queue
+        parcelMap.updateParcelStatus(parcel.getParcelId(), "collected"); // Update parcel status
+
+        return "Processed customer: " + customer.getName() + " | Fee: £" + String.format("%.2f", fee);
     }
 
+
+    public void saveReport(String filename) {
+        Log.getInstance().writeReport(filename, this);
+    }
 
     // Add a new customer to the queue
     public void addCustomer(Customer customer) {
-        queue.addCustomer(customer);
-        System.out.println("Added customer: " + customer.getName());
+        queue.addCustomer(customer); // Add to the queue
+        System.out.println("[INFO] Added customer: " + customer.getName());
+        System.out.println("Customer Details: \n- Name: " + customer.getName() + "\n- Parcel ID: " + customer.getParcelId());
     }
 
-    // Add a new parcel to the map
     public void addParcel(Parcel parcel) {
-        parcelMap.addParcel(parcel);
-        System.out.println("Added parcel: " + parcel.getParcelId());
+        parcelMap.addParcel(parcel);// Add to the ParcelMap
+        System.out.println("[INFO] Added parcel: " + parcel.getParcelId());
+        System.out.println("Parcel Details: \n- Dimensions: " + parcel.getLength() + " x " + parcel.getWidth() + " x " + parcel.getHeight() + "\n- Weight: " + parcel.getWeight() + "\n- Days in Depot: " + parcel.getDaysInDepot());
     }
 
     // Find a parcel by its ID
@@ -114,6 +129,16 @@ public class Manager {
     // Get all customers as a list
     public List<Customer> getAllCustomers() {
         return new ArrayList<>(queue.getCustomers()); // Convert Queue to List
+    }
+
+    public void printSummary() {
+        String summary = "\nApplication Summary\n" +
+                "===================\n" +
+                "Total Customers Processed: " + queue.getProcessedCount() + "\n" +
+                "Total Parcels Collected: " + Log.getInstance().getCollectedParcels().size() + "\n" +
+                "Total Fees Collected: £" + String.format("%.2f", Log.getInstance().getTotalFees()) + "\n";
+
+        System.out.println(summary);
     }
 
     // Get all parcels as a list
