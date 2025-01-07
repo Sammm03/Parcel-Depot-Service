@@ -1,9 +1,12 @@
 package model;
 
+/**
+ * Represents a Customer with a sequence number, name, and associated Parcel ID.
+ */
 public class Customer {
-    private int sequenceNumber;
-    private String name;
-    private String parcelId;
+    private final int sequenceNumber;
+    private final String name;
+    private final String parcelId;
 
     public Customer(int sequenceNumber, String name, String parcelId) {
         this.sequenceNumber = sequenceNumber;
@@ -21,5 +24,14 @@ public class Customer {
 
     public String getParcelId() {
         return parcelId;
+    }
+
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "sequenceNumber=" + sequenceNumber +
+                ", name='" + name + '\'' +
+                ", parcelId='" + parcelId + '\'' +
+                '}';
     }
 }
