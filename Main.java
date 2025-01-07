@@ -1,42 +1,30 @@
 package view;
 
-import model.Customer; // Import the Customer class
-import model.Parcel;   // Import the Parcel class
-import controller.Manager; // Import the Manager class
-import model.QueueofCustomers;
+import controller.Manager;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.List;
-
 
 public class Main {
     public static void main(String[] args) {
+        // Initialize the manager
         Manager manager = new Manager();
 
-        // Load data
+        // Load customers and parcels from files
         manager.loadCustomers("resources/Custs.csv");
         manager.loadParcels("resources/Parcels.csv");
 
-        // Debug loaded data
-        System.out.println("Customers Loaded: " + manager.getQueue().getCustomers().size());
-        System.out.println("Parcels Loaded: " + manager.getParcelMap().getParcels().size());
+        // Launch the GUI
+        SwingUtilities.invokeLater(() -> new MainFrame(
+                new ArrayList<>(manager.getQueue().getCustomers()),
+                new ArrayList<>(manager.getParcelMap().getParcels().values()),
+                manager
+        ));
 
-        // Prepare data for GUI
-        List<Customer> customerList = new ArrayList<>(manager.getQueue().getCustomers());
-        List<Parcel> parcelList = new ArrayList<>(manager.getParcelMap().getParcels().values());
-
-        // Debug data before GUI
-        System.out.println("Passing to GUI:");
-        System.out.println("Customers:");
-        System.out.println("Seq no. - Name,ParcelID");
-        customerList.forEach(customer -> System.out.println(customer.getSequenceNumber() + " - " + customer.getName() + "," +customer.getParcelId()));
-        System.out.println("Parcels:");
-        System.out.println("ParcelID - Days in Depot, Weight, Dimentions");
-        parcelList.forEach(parcel -> System.out.println(parcel.getParcelId() + " - " + parcel.getDaysInDepot()+ ", " + parcel.getWeight() + ", " + parcel.getDimensions()));
-
-        // Launch GUI
-        SwingUtilities.invokeLater(() -> new MainFrame(customerList, parcelList, manager));
+        // Save the report on application exit
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            manager.saveReport("resources/Finalreport.txt");
+            System.out.println("Report saved on application exit.");
+        }));
     }
-
 }
