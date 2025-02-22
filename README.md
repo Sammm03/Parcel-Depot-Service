@@ -69,7 +69,7 @@ The report includes:
 - Pending parcels in the depot
 - Recently added customers & parcels
 
-# 🏗 Future Improvements
+## 🏗 Future Improvements
 
 - 🔹 Improve GUI with a dashboard summary
 - 🔹 Implement database storage instead of CSV files
